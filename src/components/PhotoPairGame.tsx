@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 // 18 images
 const images = [
@@ -68,6 +68,13 @@ export default function PhotoPairGame({
   const [images] = useState<string[]>(() =>
     shuffleArray([...imagePairs], createSeededRandom(20250214)),
   );
+  const preloadedImages = useMemo(() => {
+    const usedIndices = heartLayout
+      .flat()
+      .filter((index): index is number => index !== null);
+
+    return Array.from(new Set(usedIndices.map((index) => images[index])));
+  }, [images]);
 
   const handleClick = async (index: number) => {
     if (selected.length === 2 || matched.includes(index) || selected.includes(index)) return;
@@ -101,15 +108,17 @@ export default function PhotoPairGame({
   return (
     <div className="grid grid-cols-9 gap-1 lg:gap-2 max-w-[95vw] mx-auto place-items-center">
       {/* Image preload */}
-      <div className="hidden">
-        {images.map((image, i) => (
+      <div className="hidden" aria-hidden="true">
+        {preloadedImages.map((image, i) => (
           <Image
             key={i}
             src={image}
-            alt={`Image ${i + 1}`}
-            fill
+            alt=""
+            width={160}
+            height={160}
             className="object-cover"
             priority
+            sizes="160px"
           />
         ))}
       </div>
