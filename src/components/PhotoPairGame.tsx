@@ -29,12 +29,20 @@ const images = [
 // Create 18 pairs of images (36 images in total)
 const imagePairs = images.flatMap((image) => [image, image]);
 
-const shuffleArray = (array: string[]) => {
+const shuffleArray = (array: string[], random: () => number = Math.random) => {
   for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(random() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
   }
   return array;
+};
+
+const createSeededRandom = (seed: number) => {
+  let current = seed;
+  return () => {
+    current = (current * 1664525 + 1013904223) % 4294967296;
+    return current / 4294967296;
+  };
 };
 
 const heartLayout = [
@@ -57,7 +65,9 @@ export default function PhotoPairGame({
   const [selected, setSelected] = useState<number[]>([]);
   const [matched, setMatched] = useState<number[]>([]);
   const [incorrect, setIncorrect] = useState<number[]>([]);
-  const [images] = useState(() => shuffleArray([...imagePairs]));
+  const [images] = useState<string[]>(() =>
+    shuffleArray([...imagePairs], createSeededRandom(20250214)),
+  );
 
   const handleClick = async (index: number) => {
     if (selected.length === 2 || matched.includes(index) || selected.includes(index)) return;
